@@ -4,7 +4,14 @@ require(`dotenv`).config({
 
 module.exports = {
   siteMetadata: {
-    siteTitleAlt: `Minimal Blog - Gatsby Theme`,
+    siteHeadline: `zeroGone's`,
+    siteUrl: `https://localhost:8080`,
+    siteDescription: '영고니의 개인 블로그',
+    siteLanguage: 'Korean',
+    siteImage: `/logo/`,
+    author:`zeroGone`,
+    siteTitle:`고니`,
+    siteTitleAlt: `zeroGone's`,
   },
   plugins: [
     {
@@ -20,15 +27,15 @@ module.exports = {
             title: `About`,
             slug: `/about`,
           },
+          {
+            title: `Contact`,
+            slug: `/contact`,
+          },
         ],
         externalLinks: [
           {
-            name: `Twitter`,
-            url: `https://twitter.com/lekoarts_de`,
-          },
-          {
-            name: `Instagram`,
-            url: `https://www.instagram.com/lekoarts.de/`,
+            name: `Github`,
+            url: `https://github.com/zeroGone`,
           },
         ],
       },
