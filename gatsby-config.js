@@ -8,7 +8,7 @@ module.exports = {
     siteUrl: `https://zerogone.blog`,
     siteDescription: '영고니의 개인 블로그',
     siteLanguage: 'Korean',
-    siteImage: `/favicon-16x16.png`,
+    siteImage: `/favicon-96x96.png`,
     author:`zeroGone`,
     siteTitle:`고니`,
     siteTitleAlt: `zeroGone's`,
@@ -59,16 +59,28 @@ module.exports = {
         display: `standalone`,
         icons: [
           {
-            src: `/android-chrome-192x192.png`,
-            sizes: `192x192`,
+            src: `/favicon-16x16.png`,
+            sizes: `16x16`,
             type: `image/png`,
           },
           {
-            src: `/android-chrome-512x512.png`,
-            sizes: `512x512`,
+            src: `/favicon-32x32.png`,
+            sizes: `32x32`,
             type: `image/png`,
           },
         ],
+        // icons: [
+        //   {
+        //     src: `/android-chrome-192x192.png`,
+        //     sizes: `192x192`,
+        //     type: `image/png`,
+        //   },
+        //   {
+        //     src: `/android-chrome-512x512.png`,
+        //     sizes: `512x512`,
+        //     type: `image/png`,
+        //   },
+        // ],
       },
     },
     `gatsby-plugin-offline`,
