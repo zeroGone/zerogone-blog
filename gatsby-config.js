@@ -5,10 +5,10 @@ require(`dotenv`).config({
 module.exports = {
   siteMetadata: {
     siteHeadline: `zeroGone's`,
-    siteUrl: `https://localhost:8080`,
+    siteUrl: `https://zerogone.blog`,
     siteDescription: '영고니의 개인 블로그',
     siteLanguage: 'Korean',
-    siteImage: `/logo/`,
+    siteImage: `/favicon-16x16.png`,
     author:`zeroGone`,
     siteTitle:`고니`,
     siteTitleAlt: `zeroGone's`,
