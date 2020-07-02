@@ -1,0 +1,90 @@
+---
+title: "프로그래머스 - 기능개발"
+date: 2020-06-28
+tags:
+  - Algorithm
+  - Programmers
+  - Stack
+  - Queue
+slug: "/programmers/기능개발"
+---
+
+- __문제 설명__  <br/>
+프로그래머스 팀에서는 기능 개선 작업을 수행 중입니다. <br/>
+각 기능은 진도가 100%일 때 서비스에 반영할 수 있습니다. <br/>
+
+또, 각 기능의 개발속도는 모두 다르기 때문에 <br/>
+뒤에 있는 기능이 앞에 있는 기능보다 먼저 개발될 수 있고, <br/>
+이때 뒤에 있는 기능은 앞에 있는 기능이 배포될 때 함께 배포됩니다. <br/>
+
+먼저 배포되어야 하는 순서대로 작업의 진도가 적힌 정수 배열 progresses와 <br/>
+각 작업의 개발 속도가 적힌 정수 배열 speeds가 주어질 때 <br/>
+각 배포마다 몇 개의 기능이 배포되는지를 return 하도록 <br/>
+solution 함수를 완성하세요.
+
+- __제한사항__ <br/>
+작업의 개수(progresses, speeds배열의 길이)는 100개 이하입니다. <br/>
+작업 진도는 100 미만의 자연수입니다. <br/>
+작업 속도는 100 이하의 자연수입니다. <br/>
+배포는 하루에 한 번만 할 수 있으며, 하루의 끝에 이루어진다고 가정합니다.  <br/>
+예를 들어 진도율이 95%인 작업의 개발 속도가 하루에 4%라면 배포는 2일 뒤에 이루어집니다.
+
+---------------------------
+
+각각의 배포까지 걸리는 시간을 계산한다.<br/>
+이전 배포를 꺼내서 배포 날짜 비교<br/>
+이전 배포보다 오래 걸린다면 큐에 이전 배포를 다시 넣고 새로운 배포 날짜 추가<br/>
+짧게 걸리면 이전 배포의 기능 개수를 하나 늘려준다.
+
+```java \\{11-15, 26}
+    public int[] solution(int[] progresses, int[] speeds) {
+            LinkedList<Deploy> q = new LinkedList<>();
+            int temp = 100 - progresses[0];
+            int value = temp % speeds[0] > 0 ? temp / speeds[0] + 1 : temp / speeds[0];
+
+            q.add(new Deploy(value));
+            for (int i = 1; i < progresses.length; i++) {
+                temp = 100 - progresses[i];
+                value = temp % speeds[i] > 0 ? temp / speeds[i] + 1 : temp / speeds[i];
+
+                Deploy previous = q.pollLast();
+                if(previous.getDay() < value){
+                    q.add(previous);
+                    q.add(new Deploy(value));
+                }else{
+                    q.add(new Deploy(previous.getDay(), previous.getNumber()+1));
+                }
+            }
+
+            int[] answer = new int[q.size()];
+            for(int i=0; i<answer.length; i++) {
+                answer[i] = q.poll().getNumber();
+            }
+            return answer;
+        }
+
+        class Deploy {
+            private int day;
+            private int number;
+
+            public Deploy(int day) {
+                this.number = 1;
+                this.day = day;
+            }
+
+            public Deploy(int day, int number) {
+                this.number = number;
+                this.day = day;
+            }
+
+            public int getNumber() {
+                return number;
+            }
+
+            public int getDay() {
+                return day;
+            }
+        }
+```
+
+문제를 완벽히 이해하는데 너무 오래걸렸다.
