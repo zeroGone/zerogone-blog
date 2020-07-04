@@ -1,0 +1,110 @@
+---
+title: "프로그래머스 - 스킬트리"
+date: 2020-07-04
+tags:
+  - Algorithm
+  - Programmers
+  - String
+slug: "/programmers/스킬트리"
+---
+
+- __문제 설명__  <br/>
+선행 스킬이란 어떤 스킬을 배우기 전에 먼저 배워야 하는 스킬을 뜻합니다. <br/>
+예를 들어 선행 스킬 순서가 <br/>
+스파크 → 라이트닝 볼트 → 썬더일때, <br/>
+썬더를 배우려면 먼저 라이트닝 볼트를 배워야 하고, 라이트닝 볼트를 배우려면 먼저 스파크를 배워야 합니다. <br/>
+위 순서에 없는 다른 스킬(힐링 등)은 순서에 상관없이 배울 수 있습니다.  <br/>
+따라서 스파크 → 힐링 → 라이트닝 볼트 → 썬더와 같은 스킬트리는 가능하지만,
+썬더 → 스파크나 <br/>
+라이트닝 볼트 → 스파크 → 힐링 → 썬더와 같은 스킬트리는 불가능합니다. <br/>
+선행 스킬 순서 skill과 유저들이 만든 스킬트리1를 담은 배열 skill_trees가 매개변수로 주어질 때, <br/>
+가능한 스킬트리 개수를 return 하는 solution 함수를 작성해주세요.
+
+- __제한사항__ <br/>
+스킬은 알파벳 대문자로 표기하며, 모든 문자열은 알파벳 대문자로만 이루어져 있습니다.<br/>
+스킬 순서와 스킬트리는 문자열로 표기합니다.<br/>
+예를 들어, C → B → D 라면 CBD로 표기합니다<br/>
+선행 스킬 순서 skill의 길이는 1 이상 26 이하이며, 스킬은 중복해 주어지지 않습니다.<br/>
+skill_trees는 길이 1 이상 20 이하인 배열입니다.<br/>
+skill_trees의 원소는 스킬을 나타내는 문자열입니다.<br/>
+skill_trees의 원소는 길이가 2 이상 26 이하인 문자열이며, 스킬이 중복해 주어지지 않습니다.
+
+---------------------------
+
+skill_trees의 원소 중 하나 <br/>
+즉, 해당 스킬을 기준으로 잡는다<br/>
+스킬트리 = 문자열 skill 에서 인덱스를 찾아 이 전 스킬들을 배웠는지 검사한다<br/>
+나는 문자열 skill의 길이만큼 boolean 형 배열을 만들어 <br/>
+이전 스킬을 배웠는지 안배웠는지 검사하였다<br/>
+
+```java {5, 10}
+    public static int solution(String skill, String[] skill_trees) {
+        int answer = 0;
+
+        for (String s : skill_trees) {
+            boolean[] visit = new boolean[skill.length()];
+            boolean check = false;
+            for (int i = 0; i < s.length(); i++) {
+                char now = s.charAt(i);
+                boolean start = false;
+                for (int j = skill.length() - 1; j >= 0; j--) {
+                    if (start && !visit[j]) {
+                        check = true;
+                        break;
+                    }
+
+                    if (now == skill.charAt(j)) {
+                        visit[j] = true;
+                        start = true;
+                    }
+                }
+            }
+
+            if (!check) {
+                answer++;
+            }
+        }
+
+        return answer;
+    }
+```
+
+처음 구현할 때는 s의 문자의 인덱스를 위치를 찾기 위해<br/>
+skill를 뒤부터 돌아 검사하였다<br/>
+
+하지만 String 클래스의 indexOf 라는 메소드를 알고 다시 짜보았다.
+
+```java {10,25-28}
+    public static int solution2(String skill, String[] skill_trees) {
+        int answer = 0;
+
+        for (String s : skill_trees) {
+            boolean[] visit = new boolean[skill.length()];
+
+            boolean check = true;
+            for (int i = 0; i < s.length(); i++) {
+                char now = s.charAt(i);
+                int index = skill.indexOf(now);
+                if (index != -1) {
+                    visit[index] = true;
+                    if(!check(visit, index)){
+                        check = false;
+                        break;
+                    };
+                }
+            }
+
+            if (check) answer++;
+        }
+        return answer;
+    }
+
+    private static boolean check(boolean[] visit, int index) {
+        if (index == -1) return true;
+        return visit[index] && check(visit, index - 1);
+    }
+```
+
+
+
+
