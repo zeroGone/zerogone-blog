@@ -31,13 +31,13 @@ skill_trees의 원소는 길이가 2 이상 26 이하인 문자열이며, 스킬
 
 ---------------------------
 
-skill_trees의 원소 중 하나 <br/>
-즉, 해당 스킬을 기준으로 잡는다<br/>
-스킬트리 = 문자열 skill 에서 인덱스를 찾아 이 전 스킬들을 배웠는지 검사한다<br/>
+skill_trees의 원소 중 하나를 s 라고 할때<br/>
+스킬트리 = 문자열 skill 에서 <br/>
+s의 문자들의 인덱스를 찾아 이 전 스킬들을 배웠는지 검사한다<br/>
 나는 문자열 skill의 길이만큼 boolean 형 배열을 만들어 <br/>
 이전 스킬을 배웠는지 안배웠는지 검사하였다<br/>
 
-```java {5, 10}
+```java {5,10}
     public static int solution(String skill, String[] skill_trees) {
         int answer = 0;
 
