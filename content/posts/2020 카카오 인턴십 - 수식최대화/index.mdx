@@ -1,0 +1,122 @@
+---
+title: "2020 카카오 인턴십 - 수식 최대화"
+date: 2020-07-17
+tags:
+  - Algorithm
+  - Programmers
+  - 2020 카카오 인턴십
+  - Queue
+slug: "/kakao/괄호변환"
+---
+
+- __문제 설명__  <br/>
+IT 벤처 회사를 운영하고 있는 라이언은 <br/>
+매년 사내 해커톤 대회를 개최하여 우승자에게 상금을 지급하고 있습니다. <br/>
+이번 대회에서는 우승자에게 지급되는 상금을 이전 대회와는 다르게 다음과 같은 방식으로 결정하려고 합니다. <br/>
+해커톤 대회에 참가하는 모든 참가자들에게는 숫자들과 3가지의 연산문자(+, -, *) 만으로 이루어진 연산 수식이 전달되며, <br/>
+참가자의 미션은 전달받은 수식에 포함된 연산자의 우선순위를 자유롭게 재정의하여 만들 수 있는 가장 큰 숫자를 제출하는 것입니다.<br/>
+단, 연산자의 우선순위를 새로 정의할 때, 같은 순위의 연산자는 없어야 합니다.<br/>
+즉, + > - > * 또는 - > * > + 등과 같이 연산자 우선순위를 정의할 수 있으나 <br/>
++,* > - 또는 * > +,-처럼 2개 이상의 연산자가 동일한 순위를 가지도록 연산자 우선순위를 정의할 수는 없습니다. <br/>
+수식에 포함된 연산자가 2개라면 정의할 수 있는 연산자 우선순위 조합은 2! = 2가지이며, 연산자가 3개라면 3! = 6가지 조합이 가능합니다.<br/>
+만약 계산된 결과가 음수라면 해당 숫자의 절댓값으로 변환하여 제출하며<br/>
+제출한 숫자가 가장 큰 참가자를 우승자로 선정하며, 우승자가 제출한 숫자를 우승상금으로 지급하게 됩니다.<br/>
+예를 들어, 참가자 중 네오가 아래와 같은 수식을 전달받았다고 가정합니다.<br/>
+"100-200*300-500+20"<br/>
+일반적으로 수학 및 전산학에서 약속된 연산자 우선순위에 따르면 더하기와 빼기는 서로 동등하며 곱하기는 더하기, 빼기에 비해 우선순위가 높아 * > +,- 로 우선순위가 정의되어 있습니다.<br/>
+대회 규칙에 따라 + > - > * 또는 - > * > + 등과 같이 연산자 우선순위를 정의할 수 있으나 <br/>
++,* > - 또는 * > +,- 처럼 2개 이상의 연산자가 동일한 순위를 가지도록 연산자 우선순위를 정의할 수는 없습니다.<br/>
+수식에 연산자가 3개 주어졌으므로 가능한 연산자 우선순위 조합은 3! = 6가지이며, 그 중 + > - > * 로 연산자 우선순위를 정한다면 결괏값은 22,000원이 됩니다.<br/>
+반면에 * > + > - 로 연산자 우선순위를 정한다면 수식의 결괏값은 -60,420 이지만, 규칙에 따라 우승 시 상금은 절댓값인 60,420원이 됩니다.<br/>
+참가자에게 주어진 연산 수식이 담긴 문자열 expression이 매개변수로 주어질 때, 우승 시 받을 수 있는 가장 큰 상금 금액을 return 하도록 solution 함수를 완성해주세요.<br/>
+
+- __제한사항__ <br/>
+expression은 길이가 3 이상 100 이하인 문자열입니다.<br/>
+expression은 공백문자, 괄호문자 없이 오로지 숫자와 3가지의 연산자(+, -, *) 만으로 이루어진 올바른 중위표기법(연산의 두 대상 사이에 연산기호를 사용하는 방식)으로 표현된 연산식입니다. <br/>
+잘못된 연산식은 입력으로 주어지지 않습니다.<br/>
+즉, "402+-561*"처럼 잘못된 수식은 올바른 중위표기법이 아니므로 주어지지 않습니다.<br/>
+expression의 피연산자(operand)는 0 이상 999 이하의 숫자입니다.<br/>
+즉, "100-2145*458+12"처럼 999를 초과하는 피연산자가 포함된 수식은 입력으로 주어지지 않습니다.<br/>
+"-56+100"처럼 피연산자가 음수인 수식도 입력으로 주어지지 않습니다.<br/>
+expression은 적어도 1개 이상의 연산자를 포함하고 있습니다.<br/>
+연산자 우선순위를 어떻게 적용하더라도, expression의 중간 계산값과 최종 결괏값은 절댓값이 263 - 1 이하가 되도록 입력이 주어집니다.<br/>
+같은 연산자끼리는 앞에 있는 것의 우선순위가 더 높습니다.<br/>
+
+---------------------------
+
+처음에는 문자열로 인덱스를 계산하여 새로운 문자열을 만들고 붙이고 작업을 하려고 했다.<br/>
+그러나 계산하고 난 후 처리된 결과값이 음수로 되었을 경우 - 연산자와 혼동되어서 방식을 바꾸었다.<br/>
+
+1. 연산자와 숫자들을 리스트로 변환한다.
+2. 연산자 큐를 순서대로 뽑아서 계산되는 연산자일 경우 숫자 두개를 뽑아 계산 후 숫자 큐에 첫 번째로 넣는다.
+3. 계산되는 연산이 아닐경우 새로운 리스트에 숫자를 넣는다
+4. 이 후 새로운 숫자들을 다시 큐에 넣는다.
+
+```java {25-41}
+    final List<Long> numbers = new ArrayList<>();
+    final List<Character> operators = new ArrayList<>();
+
+    public long solution(String expression) {
+        String[] strings = new String[]{
+                "*+-",
+                "*-+",
+                "+*-",
+                "+-*",
+                "-*+",
+                "-+*",
+        };
+
+        converToList(expression);
+
+        long answer = 0;
+
+        for(String s : strings){
+            LinkedList<Long> numQueue = new LinkedList<>(numbers);
+            LinkedList<Character> operQueue = new LinkedList<>(operators);
+
+            for(int i=0; i<s.length();i++){
+                char operator = s.charAt(i);
+
+                List<Long> num = new ArrayList<>();
+                List<Character> temp = new ArrayList<>();
+                while(!operQueue.isEmpty()){
+                    char c = operQueue.pollFirst();
+                    if(c != operator){
+                        num.add(numQueue.poll());
+                        temp.add(c);
+                    }else{
+                        if(operator == '-' ) numQueue.addFirst(numQueue.pollFirst() - numQueue.pollFirst());
+                        else if( operator == '+') numQueue.addFirst(numQueue.pollFirst() + numQueue.pollFirst());
+                        else numQueue.addFirst(numQueue.pollFirst() * numQueue.pollFirst());
+                    }
+                }
+                num.add(numQueue.poll());
+
+                numQueue.addAll(num);
+                operQueue.addAll(temp);
+            }
+
+            long n = Math.abs(numQueue.poll());
+            if (answer < n) answer = n;
+        }
+
+        return answer;
+    }
+
+    public void converToList(String string){
+
+        StringBuilder builder = new StringBuilder();
+        for(int i=0; i<string.length(); i++){
+            char c = string.charAt(i);
+
+            if(Character.isDigit(c)){
+                builder.append(c);
+            }else{
+                operators.add(c);
+                numbers.add(Long.parseLong(builder.toString()));
+                builder.delete(0, builder.length());
+            }
+        }
+        numbers.add(Long.parseLong(builder.toString()));
+    }
+```
