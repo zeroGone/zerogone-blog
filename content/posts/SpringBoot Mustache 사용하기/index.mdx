@@ -1,0 +1,147 @@
+---
+title: "Spring Boot Mustache 사용하기"
+date: 2020-07-27
+tags:
+  - SpringBoot
+  - Mustache
+  - Template Engine
+slug: "/spring/boot/mustache"
+---
+
+
+SpringBoot Mustache 사용하기
+=======================
+- [Guide to Mustache with Spring Boot](https://www.baeldung.com/spring-boot-mustache)
+- [Mustache로 화면 구성하기](https://velog.io/@swchoi0329/Mustache%EB%A1%9C-%ED%99%94%EB%A9%B4-%EA%B5%AC%EC%84%B1%ED%95%98%EA%B8%B0)
+- [Mustache 공유](https://supawer0728.github.io/2018/03/14/Mustache/)
+- [https://mustache.github.io/](https://mustache.github.io/)
+
+# Mustache
+#### Logic-less
+Mustache를 대표하는 단어이자 소개이고 장점이다. </br>
+프론트단에서 뷰를 위해 <u>따로 짜야하는 로직이 없다.</u> </br>
+Mustache는 현존하는 템플릿 엔진 중 사용하기가 **가장 간단**하다. </br>
+
+
+## Dependency
+Gradle 기준
+```
+implementation 'org.springframework.boot:spring-boot-starter-mustache'
+implementation 'org.springframework.boot:spring-boot-starter-web'
+```
+
+## application.yml
+```
+spring:
+  mustache:
+    suffix: .html
+```
+SpringBoot에서 mustache를 지원하면서 <br/>
+기존에 <code>.mustache</code> 확장명을 가진 파일들을 생성할 수 있지만 <br/>
+위와 같이 설정하게 되면 <br/>
+html 파일을 <code>.mustache</code> 확장명을 가진 파일과 같이 사용할 수 있게 되었다.
+
+## User
+```
+//테스트용 모델
+public class User {
+    private String id;
+	private String name;
+
+	public User(String id, String name){
+        this.id = id;
+		this.name = name;
+	}
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+```
+
+## UserController
+```
+@Controller
+public class UserController {  //테스트용 컨트롤러
+    @GetMapping("/user")
+    public String displayUserList(Model model){
+        List<User> user = new ArrayList<>();
+		user.add(new User("zeroGone", "김영곤"));
+		user.add(new User("rlgur0405", "정기혁"));
+		model.addAttribute("user", user);
+		model.addAttribute("sex", null);
+		return "index";
+	}
+}
+```
+## user_list.html
+```
+<div>
+  {{#user}}
+	<h1>{{name}}</h3>
+    <h1>{{id}}</h1>
+  {{/user}}
+</div>
+```
+컨트롤러에서 넣어준 모델에서  <br/>
+<code>user</code> 객체의 <br/>
+<code>name</code> 과 <code>id</code> 를 맵핑 한다.<br/>
+그리고 넣어준 객체가 <u>리스트일 경우 해당 리스트의 원소들을 하나하나 맵핑</u>한다.
+
+## index.html
+```
+Hello World!
+{{>user_list}}
+```
+<code> >user_list </code>
+'>' 로 시작할 경우 <u>해당 파일 기준 위치</u>에서 <br/>
+user_list 로 된 파일을 찾는다.  <br/>
+우리는 yml에서 <code>.mustache</code> 가 아닌 html로 확장명을 설정했기 때문에 <br/>
+user_list.html를 찾고 <br/>
+**자동으로 user_list.html 의 내용을 합쳐준다.**<br/>
+
+## localhost:8080/user
+![userlist](./userlist.png)
+
+## MustacheException
+해당 속성이 없거나 null 일 경우 <br/>
+MustacheException이 발생한다 <br/>
+MustacheException을 발생시키는 것이 아닌 디폴트 값을 설정해 대신 뿌려줄 수 있다. <br/>
+
+```
+import org.springframework.core.env.Environment;
+
+@Bean
+public Mustache.Compiler mustacheCompiler(
+        Mustache.TemplateLoader templateLoader,
+        Environment environment) {
+
+    MustacheEnvironmentCollector collector
+            = new MustacheEnvironmentCollector();
+    collector.setEnvironment(environment);
+
+    return Mustache.compiler()
+            .defaultValue("디폴트 값이 출력됩니다.")
+            .withLoader(templateLoader)
+            .withCollector(collector);
+}
+```
+
+<code>Mustache</code> 클래스 안에는 <code>Complier</code> 정적 클래스가 존재한다. <br/>
+이 <code>Compiler</code>정적 클래스에서 <code>defaultValue</code> 메소드의 파라미터로 디폴트 값을 설정해주고 <code>Bean</code>으로 등록하면  <br/>
+500 에러가 뜨는 것이 아닌 디폴트 값이 화면에 출력된다.
+
+### Test
+```
+//index.html 수정
+Hello World!
+{{>user_list}}
+{{none}}
+```
+
+![userlist2](./userlist2.png)
+
