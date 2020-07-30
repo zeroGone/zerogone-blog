@@ -1,6 +1,6 @@
 ---
 title: "Spring Boot Mustache 사용하기"
-date: 2020-07-27
+date: 2020-07-30
 tags:
   - SpringBoot
   - Mustache
@@ -14,7 +14,7 @@ SpringBoot Mustache 사용하기
 - [Guide to Mustache with Spring Boot](https://www.baeldung.com/spring-boot-mustache)
 - [Mustache로 화면 구성하기](https://velog.io/@swchoi0329/Mustache%EB%A1%9C-%ED%99%94%EB%A9%B4-%EA%B5%AC%EC%84%B1%ED%95%98%EA%B8%B0)
 - [Mustache 공유](https://supawer0728.github.io/2018/03/14/Mustache/)
-- [https://mustache.github.io/](https://mustache.github.io/)
+- [Mustache 공식 깃허브](https://mustache.github.io/)
 
 # Mustache
 #### Logic-less
@@ -29,17 +29,6 @@ Gradle 기준
 implementation 'org.springframework.boot:spring-boot-starter-mustache'
 implementation 'org.springframework.boot:spring-boot-starter-web'
 ```
-
-## application.yml
-```
-spring:
-  mustache:
-    suffix: .html
-```
-SpringBoot에서 mustache를 지원하면서 <br/>
-기존에 <code>.mustache</code> 확장명을 가진 파일들을 생성할 수 있지만 <br/>
-위와 같이 설정하게 되면 <br/>
-html 파일을 <code>.mustache</code> 확장명을 가진 파일과 같이 사용할 수 있게 되었다.
 
 ## User
 ```
@@ -67,7 +56,7 @@ public class User {
 ```
 @Controller
 public class UserController {  //테스트용 컨트롤러
-    @GetMapping("/user")
+    @GetMapping("/")
     public String displayUserList(Model model){
         List<User> user = new ArrayList<>();
 		user.add(new User("zeroGone", "김영곤"));
@@ -78,7 +67,7 @@ public class UserController {  //테스트용 컨트롤러
 	}
 }
 ```
-## user_list.html
+## user_list.mustache
 ```
 <div>
   {{#user}}
@@ -92,7 +81,7 @@ public class UserController {  //테스트용 컨트롤러
 <code>name</code> 과 <code>id</code> 를 맵핑 한다.<br/>
 그리고 넣어준 객체가 <u>리스트일 경우 해당 리스트의 원소들을 하나하나 맵핑</u>한다.
 
-## index.html
+## index.mustache
 ```
 Hello World!
 {{>user_list}}
@@ -100,9 +89,9 @@ Hello World!
 <code> >user_list </code>
 '>' 로 시작할 경우 <u>해당 파일 기준 위치</u>에서 <br/>
 user_list 로 된 파일을 찾는다.  <br/>
-우리는 yml에서 <code>.mustache</code> 가 아닌 html로 확장명을 설정했기 때문에 <br/>
-user_list.html를 찾고 <br/>
-**자동으로 user_list.html 의 내용을 합쳐준다.**<br/>
+SpringBoot Mustache의 기본설정으로
+classpath:/templates 폴더에 있는
+해당 이름과 mustache 확장명이 일치한 파일로 합쳐준다
 
 ## localhost:8080/user
 ![userlist](./userlist.png)
@@ -137,11 +126,17 @@ public Mustache.Compiler mustacheCompiler(
 
 ### Test
 ```
-//index.html 수정
+//index.mustache 수정
 Hello World!
 {{>user_list}}
 {{none}}
 ```
 
 ![userlist2](./userlist2.png)
+
+
+-----------------------------------------
+Source 코드
+
+- [zeroGone 깃허브](https://github.com/zeroGone/Spring-will-come-to-me)
 
