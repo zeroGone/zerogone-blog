@@ -18,20 +18,20 @@ String 더하기 연산자에 관하여
 
 오늘 edwith 에서 제공하는 부스트코스를 과제를 수행하면서 고민했던 점을 기록하게 되었다.
 
-Servlet 클래스를 상속받아 doGet() 메소드를 오버라이딩하여 <br>
-화면을 출력해주는 상황에서 <br>
-PrintWriter 클래스의 print() 메소드를 사용할 때였다.<br>
+<code>Servlet</code> 클래스를 상속받아 <code>doGet()</code> 메소드를 오버라이딩하여 <br/>
+화면을 출력해주는 상황에서 <br/>
+<code>PrintWriter</code> 클래스의 <code>print()</code> 메소드를 사용할 때였다.<br/>
 
-1. 문자열을 합쳐서 print() 메소드를 한 번 호출할 것인가
-2. print() 메소드를 여러 번 호출할 것인가
+1. 문자열을 합쳐서 <code>print()</code> 메소드를 한 번 호출할 것인가
+2. <code>print()</code> 메소드를 여러 번 호출할 것인가
 
 사소한 고민을 하게 되었다.
 
-결론적으로 print() 메소드를 여러 번 호출하는 것으로 선택하였지만
+결론적으로 <code>print()</code> 메소드를 여러 번 호출하는 것으로 선택하였지만
 
 그 과정에서 알게된 점을 정리해본다.
 
-### 1. String.format
+### 1. <code>String.format()</code>
 ```
 String writerContent = String.format(""
          + "<!DOCTYPE html>\r\n"
@@ -51,20 +51,20 @@ printWriter.print(writerContent);
 ```
 
 첫 번째로 내가 짰던 코드이다.
-String.format 전역 메소드를 이용하여 문자열 생성과 포매팅을 한 번에 하였다.
+<code>String.format()</code> 전역 메소드를 이용하여 문자열 생성과 포매팅을 한 번에 하였다.
 
 그러나 파라미터에 들어가는 문자열의 길이가 만만치 않게 된 점 때문에
 
 1. 포매팅하는 구문이 어디인지 가독성이 떨어진다
-2. 포매팅을 한 번밖에 하지 않아 굳이 String.format 을 쓸 이유가 없을 것 같다 (개인적인 생각)
+2. 포매팅을 한 번밖에 하지 않아 굳이 <code>String.format()</code> 을 쓸 이유가 없을 것 같다 (개인적인 생각)
 
 따라서 가독성을 위해 포매팅하는 구문과 포매팅하지 않는 구문을 나눌 필요성이 있었다.
 
-이 과정에 있어서 여러 String 객체를 생성하고 합치는 과정에서 굳이 String 객체를 여러개 생성할 필요가 있나 의문이 들었다.
+이 과정에 있어서 여러 <code>String</code> 객체를 생성하고 합치는 과정에서 굳이 <code>String</code> 객체를 여러개 생성할 필요가 있나 의문이 들었다.
 
 그리하여
 
-String + 여러개
+<code>String</code> + 연산자 여러개
 ```
 printWriter.print(""
     + "<!DOCTYPE html>\r\n"
@@ -81,16 +81,21 @@ printWriter.print(""
     + "</html>");
 ```
 
-String.format 메소드는 일반적으로 문자열을 + 연산하여 합치는 것보다
+<code>String.format()</code> 메소드는 일반적으로 문자열을 + 연산하여 합치는 것보다
+
 포매팅 과정 때문에 현저히 성능이 떨어진다는 것을 알게 되었다.
 
 그렇다면 문자열에 + 연산를 하는 것이 과연 좋은 것일까?
 
 JDK 1.5 이상 버전에서는
 
-String + 연산을 할 시에 컴파일러가 자동으로 StringBuilder 객체를 생성하고 append() 해준 후 toString() 메소드를 호출한다.
+<code>String</code> + 연산을 할 시에
 
-이 과정에서 컴파일러는 각각의 줄마다 StringBuilder 객체를 생성한다.
+컴파일러가 자동으로 <code>StringBuilder</code> 객체를 생성하고
+
+<code>append()</code> 해준 후 <code>toString()</code> 메소드를 호출한다.
+
+이 과정에서 컴파일러는 각각의 줄마다 <code>StringBuilder</code> 객체를 생성한다.
 즉, + 연산자가 많이 쓰이지 않을 때 최적화가 된다.
 
 컴파일 되기전
@@ -109,7 +114,7 @@ for(int i = 0; i < 10; i++){
 }
 ```
 
-위의 코드와 같이 반복문이 실행 될 때 + 연산자를 쓰게 되면 무명 StringBuilder 객체가 계속 생성되고 버려져
+위의 코드와 같이 반복문이 실행 될 때 + 연산자를 쓰게 되면 무명 <code>StringBuilder</code> 객체가 계속 생성되고 버려져
 오버헤드가 발생하게 된다.
 
 최종 수정한 코드
@@ -128,11 +133,10 @@ printWriter.print("</body>");
 printWriter.print("</html>");
 ```
 
-print 메소드를 남발하는 것이 마음에 들지 않지만 선택하였다.
-그리고 PrintWriter가 자동 flush 기능있어 println 메소드보다 print 메소드를 사용하는 것이 적합하는 점도 알게 되었다.
+<code>print</code> 메소드를 남발하는 것이 마음에 들지 않지만 선택하였다.
+
+그리고 <code>PrintWriter가</code> 자동 <code>flush()</code> 기능있어
+
+<code>println()</code> 메소드보다 <code>print()</code> 메소드를 사용하는 것이 적합하는 점도 알게 되었다.
 
 부족한 글 읽어주셔서 감사합니다.
-
-
-
-
