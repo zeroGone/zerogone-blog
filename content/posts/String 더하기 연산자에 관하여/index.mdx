@@ -1,0 +1,138 @@
+---
+title: "String 더하기 연산자에 관하여"
+date: 2020-10-22
+tags:
+  - Java
+  - String
+slug: "/string/plus"
+---
+
+String 더하기 연산자에 관하여
+===========
+
+- [String 클래스는 신중히 사용하자.](https://dundung.tistory.com/210)
+- [jdk1.5에서 String 더하기의 컴파일시의 최적화](https://gist.github.com/benelog/b81b4434fb8f2220cd0e900be1634753)
+
+참고하며 정리했습니다
+--------
+
+오늘 edwith 에서 제공하는 부스트코스를 과제를 수행하면서 고민했던 점을 기록하게 되었다.
+
+Servlet 클래스를 상속받아 doGet() 메소드를 오버라이딩하여 <br>
+화면을 출력해주는 상황에서 <br>
+PrintWriter 클래스의 print() 메소드를 사용할 때였다.<br>
+
+1. 문자열을 합쳐서 print() 메소드를 한 번 호출할 것인가
+2. print() 메소드를 여러 번 호출할 것인가
+
+사소한 고민을 하게 되었다.
+
+결론적으로 print() 메소드를 여러 번 호출하는 것으로 선택하였지만
+
+그 과정에서 알게된 점을 정리해본다.
+
+### 1. String.format
+```
+String writerContent = String.format(""
+         + "<!DOCTYPE html>\r\n"
+         + "<html>\r\n"
+         + "<head>\r\n"
+         + "<meta charset=\"utf-8\">\r\n"
+         + "<title>today</title>\r\n"
+         + "<link rel=\"stylesheet\" href=\"./css/today.css\">\r\n"
+         + "</head>\r\n"
+         + "<body>"
+         + "<a href = \"index.html\"><h3>메인화면</h3></a>"
+         + "<h1>현재시간 : %s </h1>"
+         + "</body>"
+         + "</html>", nowDateTime);
+
+printWriter.print(writerContent);
+```
+
+첫 번째로 내가 짰던 코드이다.
+String.format 전역 메소드를 이용하여 문자열 생성과 포매팅을 한 번에 하였다.
+
+그러나 파라미터에 들어가는 문자열의 길이가 만만치 않게 된 점 때문에
+
+1. 포매팅하는 구문이 어디인지 가독성이 떨어진다
+2. 포매팅을 한 번밖에 하지 않아 굳이 String.format 을 쓸 이유가 없을 것 같다 (개인적인 생각)
+
+따라서 가독성을 위해 포매팅하는 구문과 포매팅하지 않는 구문을 나눌 필요성이 있었다.
+
+이 과정에 있어서 여러 String 객체를 생성하고 합치는 과정에서 굳이 String 객체를 여러개 생성할 필요가 있나 의문이 들었다.
+
+그리하여
+
+String + 여러개
+```
+printWriter.print(""
+    + "<!DOCTYPE html>\r\n"
+    + "<html>\r\n"
+    + "<head>\r\n"
+    + "<meta charset=\"utf-8\">\r\n"
+    + "<title>today</title>\r\n"
+    + "<link rel=\"stylesheet\" href=\"./css/today.css\">\r\n"
+    + "</head>\r\n"
+    + "<body>"
+    + "<a href = \"index.html\"><h3>메인화면</h3></a>"
+    + "<h1>현재시간 : " + nowDateTime + "</h1>"
+    + "</body>"
+    + "</html>");
+```
+
+String.format 메소드는 일반적으로 문자열을 + 연산하여 합치는 것보다
+포매팅 과정 때문에 현저히 성능이 떨어진다는 것을 알게 되었다.
+
+그렇다면 문자열에 + 연산를 하는 것이 과연 좋은 것일까?
+
+JDK 1.5 이상 버전에서는
+
+String + 연산을 할 시에 컴파일러가 자동으로 StringBuilder 객체를 생성하고 append() 해준 후 toString() 메소드를 호출한다.
+
+이 과정에서 컴파일러는 각각의 줄마다 StringBuilder 객체를 생성한다.
+즉, + 연산자가 많이 쓰이지 않을 때 최적화가 된다.
+
+컴파일 되기전
+```
+for (int i=0;i<10;i++){
+    str2 = str2 + "1111";
+    str2 += "1111";
+}
+```
+
+컴파일 시
+```
+for(int i = 0; i < 10; i++){
+    str2 = (new StringBuilder(String.valueOf(str2))).append("1111").toString();
+    str2 = (new StringBuilder(String.valueOf(str2))).append("1111").toString();
+}
+```
+
+위의 코드와 같이 반복문이 실행 될 때 + 연산자를 쓰게 되면 무명 StringBuilder 객체가 계속 생성되고 버려져
+오버헤드가 발생하게 된다.
+
+최종 수정한 코드
+```
+printWriter.print("<!DOCTYPE html>\r\n");
+printWriter.print("<html>\r\n");
+printWriter.print("<head>\r\n");
+printWriter.print("<meta charset=\"utf-8\">\r\n");
+printWriter.print("<title>today</title>\r\n");
+printWriter.print("<link rel=\"stylesheet\" href=\"./css/today.css\">\r\n");
+printWriter.print("</head>\r\n");
+printWriter.print("<body>");
+printWriter.print("<a href = \"index.html\"><h3>메인화면</h3></a>");
+printWriter.print("<h1>현재시간 : " + nowDateTime + "</h1>");
+printWriter.print("</body>");
+printWriter.print("</html>");
+```
+
+print 메소드를 남발하는 것이 마음에 들지 않지만 선택하였다.
+그리고 PrintWriter가 자동 flush 기능있어 println 메소드보다 print 메소드를 사용하는 것이 적합하는 점도 알게 되었다.
+
+부족한 글 읽어주셔서 감사합니다.
+
+
+
+
