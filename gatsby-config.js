@@ -10,7 +10,7 @@ module.exports = {
     siteLanguage: 'Korean',
     siteImage: `src/images/favicon-96x96.png`,
     author:`zeroGone`,
-    siteTitle:`영겁의 고민 끝에 적는 한 줄`,
+    siteTitle:`zeroGone`,
     siteTitleAlt: `zeroGone's`,
   },
   plugins: [
