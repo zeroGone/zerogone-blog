@@ -72,7 +72,7 @@ public void update(Object dto) {
 
 1. 각 SQL 쿼리를 사용해야 한다
 2. <code>getList()</code> 의 경우 <code>ResultSet</code> 객체를 사용해야 한다
-3. <code>add()</code> 와 <code>update()</code> 는 쿼리에 맞게 <code>PreparedStatement</code> 객체를 설정해야 한다
+3. <code>insert()</code> 와 <code>update()</code> 는 쿼리에 맞게 <code>PreparedStatement</code> 객체를 설정해야 한다
 
 이를 인식하고 중복을 줄이기 위해 메소드 단위로 빼려고 시도하였지만
 <code>try-with-resource</code> 관련하여 모르는 점도 많았고
