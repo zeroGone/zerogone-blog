@@ -1,0 +1,235 @@
+---
+title: "Template Method 패턴 적용기"
+date: 2020-11-01
+tags:
+  - Design Pattern
+  - Java
+slug: "/design-pattern/template-method"
+---
+
+> 참고
+[Template Method 패턴을 JDBC에 적용하기](https://javacan.tistory.com/entry/116)
+
+최근 <code>JDBC</code> 를 사용한 제 코드에서 마음에 들지 않았던 부분이 있었습니다.
+
+데이터베이스 조회, 수정, 삽입 시 모두
+반복적으로 <code>Connection</code> 객체와 <code>PreparedStatement</code> 객체를 얻는 코드가 중복된다는 점이였습니다.
+
+
+```java
+List<Object> getList() {
+  List<Object> list = new ArrayList<>();
+
+  try (Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD);
+      PreparedStatement preparedStatement = connection.prepareStatement(SQL_SELECT_QUERY)){
+
+    try (ResultSet resultSet = preparedStatement.executeQuery()){
+
+      while (resultSet.next()) {
+        // resultSet 값을 맵핑하여
+        // 리스트에 추가
+      }
+
+    } catch (SQLException sqlException) {
+       sqlException.printStackTrace();
+    }
+  }
+  return list;
+}
+```
+
+```java
+public void insert(Object dto) {=
+  try (Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD);
+      PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT_QUERY)) {
+
+      // preparedStatment set
+
+      preparedStatement.executeUpdate();
+
+   } catch (SQLException sqlException) {
+      sqlException.printStackTrace();
+   }
+}
+```
+
+```java
+public void update(Object dto) {
+  try (Connection connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD);
+      PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE_QUERY)) {
+
+    // preparedStatment set
+
+    preparedStatement.executeUpdate();
+
+  } catch (SQLException sqlException) {
+    sqlException.printStackTrace();
+  }
+}
+```
+
+위 메소드의 다른 점을 추출해보았을 때
+
+1. 각 SQL 쿼리를 사용해야 한다
+2. <code>getList()</code> 의 경우 <code>ResultSet</code> 객체를 사용해야 한다
+3. <code>add()</code> 와 <code>update()</code> 는 쿼리에 맞게 <code>PreparedStatement</code> 객체를 설정해야 한다
+
+이를 인식하고 중복을 줄이기 위해 메소드 단위로 빼려고 시도하였지만
+<code>try-with-resource</code> 관련하여 모르는 점도 많았고
+뜯어서 <code>try-catch-finally</code> 구문으로 어찌어찌 해보니
+코드가 매우매우 지저분해졌었다
+
+결국 **Template Method** 패턴에 대해 알게 되어서 실제로 적용해보았다
+
+### Template Method Pattern
+
+- **행위(Behavioral) 패턴** 중 하나
+- 특정 부분을 **서브 클래스로 캡슐화** 하는 것
+- **코드 중복을 최소화할 때 유용** 하다
+
+1. 공통된 부분을 **추상 클래스로 추상화** 한다
+2. 추상 클래스를 상속받아 해당 클래스의 역할에 맞게 작성한다
+
+이렇게 정리한 점을 토대로
+
+내 코드에서 실제로 추상화할 수 있었던 것은
+- <code>getList()</code> 의 경우 해당 서브클래스들이 사용하는 객체에 맞게 맵핑
+- <code>add()</code> 와 <code>update()</code> 의 경우 쿼리와 쿼리에 맵핑할 파라미터들을 받아 셋팅
+
+정도였다...
+
+따라서 선언된 추상 클래스를
+- **제네릭** 으로 선언하여 클라이언트들이 사용하는 객체에 맞게 리턴할 수 있게 하였고
+- 클라이언트는 사용하는 객체에 맵핑하는 추상 메소드만 구현해주면 되는 **확장성** 을 갖추게 되었다
+
+
+```java
+public abstract class SomethingTemplate<T> {
+  protected abstract T wrapResultSet(ResultSet resultSet) throws SQLException;
+
+  //구현한 맵핑 메소드를 사용하여 맵핑하고 리스트에 담음
+  protected List<T> getList(String sqlQuery) {
+    List<T> objectList = new ArrayList<>();
+
+    try (Connection connection = DriverManager.getConnection(
+         DatabaseInformation.getDatabaseUrl(),
+         DatabaseInformation.getDatabaseUser(),
+         DatabaseInformation.getDatabasePassword());
+         PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+         ResultSet resultSet = preparedStatement.executeQuery()) {
+
+         while (resultSet.next()) {
+            objectList.add(wrapResultSet(resultSet));
+         }
+
+    } catch (SQLException sqlException) {
+        sqlException.printStackTrace();
+    }
+
+    return objectList;
+  }
+
+  //삽입, 수정
+  protected void update(String sqlQuery, Object[] parameters) {
+    try (Connection connection = DriverManager.getConnection(
+         DatabaseInformation.getDatabaseUrl(),
+         DatabaseInformation.getDatabaseUser(),
+         DatabaseInformation.getDatabasePassword());
+         PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+
+          preparedStatementSet(preparedStatement, parameters);
+
+          preparedStatement.executeUpdate();
+
+    } catch (SQLException sqlException) {
+        sqlException.printStackTrace();
+    }
+  }
+
+  private void preparedStatementSet(PreparedStatement preparedStatement, Object[] parameters) throws SQLException {
+    int parameterIndex = 0;
+
+    while (parameterIndex < parameters.length) {
+      Object parameter = parameters[parameterIndex];
+
+      int statementIndex = parameterIndex + 1;
+
+      if (parameter instanceof String) {
+        preparedStatement.setString(statementIndex, (String)parameter);
+      }
+      else if (parameter instanceof Long) {
+        preparedStatement.setLong(statementIndex, (long)parameter);
+      }
+      else if (parameter instanceof Integer) {
+        preparedStatement.setInt(statementIndex, (int)parameter);
+      }
+      //more..
+
+      parameterIndex++;
+    }
+  }
+}
+```
+
+추상화시킨 추상 클래스에는 기존 코드보다 더욱이 길어졌다는 단점이 존재하지만
+클라이언트에는 아래와 같이 간단히 구현된다
+
+```java
+class Client{
+  private MyTemplate myTemplate;
+  public Client(){
+    this.myTemplate = new MyTemplate();
+  }
+
+  public List<ClientDto> getList(){
+    return myTemplate.getList(SQL_SELECT_QUERY);
+  }
+
+  public void insert(ClientDto dto){
+    Object[] parameters = new Object[갯수];
+    parameters[0] = dto.getId();
+    //etc...
+    myTemplate.update(SQL_UPDATE_QUERY, parameters);
+  }
+
+  public void update(ClientDto dto){
+    Object[] parameters = new Object[갯수];
+    parameters[0] = dto.getId();
+    //etc...
+    myTemplate.update(SQL_UPDATE_QUERY, parameters);
+  }
+
+  private class MyTemplate extends Template<ClientDto>{
+    @Override
+    protected ClientDto wrapResultSet(ResultSet resultSet) throws SQLException{
+      ClientDto dto = new ClientDto();
+      dto.setId(resultSet.getLong("id"));
+      //etc..
+      return dto;
+    }
+  }
+}
+```
+
+클라이언트의 <code>insert()</code> 메소드와 <code>update()</code> 메소드는 거의 비슷하고 <code>getList()</code> 경우 단지 <code>myTemplate</code> 의 <code> getList()</code> 만 부르기만 하면 되었다.
+
+그러나 여기서 생각해보아야 할 것은
+
+과연 템플릿 메소드 패턴을 적용하였을 때 장단점 비교인 것 같다
+
+클라이언트 쪽에서는 굉장히 로직이 단순해졌지만
+
+내 코드를 보면 알 수 있듯이 클라이언트의 메소드가 하는 **행위** 가 없어졌다
+즉, 단순히 선언만 되있을 뿐....
+
+그리고 템플릿 클래스를 구현하기 위해 기존의 코드보다 더 많은 코드를 작성해야 했고
+
+결과적으로 개발자 입장에서는 템플릿 클래스와 클라이언트 클래스를 왔다 갔다 하면서 읽어야한다는 불편한 점을 낳은 것 같다.
+
+결국 내 생각에서는 **애플리케이션 규모에 따라 충분히 고려**하여 적용해야 할 것 같고
+처음 적용해본터라 잘 적용을 하였는지 의문이 들었다..
+
+
+
+
+부족한 글 읽어주셔서 감사합니다.
