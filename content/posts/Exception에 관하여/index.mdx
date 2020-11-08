@@ -88,17 +88,17 @@ public void doSomething() throws ChangedException{
 
 - <code>CheckedException</code> vs <code>UnCheckedException</code>
 
-<code>CheckedException</code> 은
+<code>CheckedException</code> 은 <br/>
 
-<code>RuntimeException</code> 을  **제외한 모든 클래스** 들이고
+<code>RuntimeException</code> 을  제외한 모든 클래스 들이고
 
 컴파일 과정에서 확인되는 <code>Exception</code> 들 입니다
 
 쉽게 말하면 코드를 작성할 때 꼭 처리하지 않으면 애플리케이션이 실행이 되지 않는 클래스입니다
 
-<code>UnCheckedException</code> 은
-<code>Java</code> 에서 <code>Exception</code> 클래스들 중에
-<code>RuntimeException</code> 을 포함하고 **상속받은 모든 클래스**들 입니다
+<code>UnCheckedException</code> 은 <br/>
+<code>Java</code> 에서 <code>Exception</code> 클래스들 중에 <br/>
+<code>RuntimeException</code> 을 포함하고 상속받은 모든 클래스들 입니다
 
 이는 <code>CheckedException</code> 과는 다르게
 
@@ -120,7 +120,7 @@ public void doSomething() throws ChangedException{
 
 트랜잭션 roll-back 여부도 있습니다
 
-<code>CheckedException</code> 는 예외가 발생하면 트랜잭션을 roll-back하지 않고 예외를 던집니다
+<code>CheckedException</code> 는 예외가 발생하면 트랜잭션을 roll-back하지 않고 예외를 던집니다 <br/>
 
 <code>UnCheckedException</code> 는 예외 발생 시 트랜잭션을 roll-back한다는 점이 있습니다
 
@@ -215,8 +215,8 @@ public class DataBaseAccessException extends RuntimeException{
   private String message;
 
 	public DatabaseAccessException(SQLException exception) {
-		this.message = exception.getMessage();
-		this.setStackTrace(exception.getStackTrace());
+		this.message = daoException.getMessage();
+		this.setStackTrace(daoException.getStackTrace());
 	}
 
 	@Override
@@ -228,7 +228,7 @@ public class DataBaseAccessException extends RuntimeException{
 
 <code>RuntimeException</code> 을 상속받아 애플리케이션에 장애가 발생하였음을 알려주도록 선언하여
 
-```java
+```
 public class DataBaseAccess{
   public DataBaseAccess{
     try{
