@@ -1,0 +1,281 @@
+---
+title: "Java Exception에 관하여"
+date: 2020-11-08
+tags:
+  - Java
+  - Exception
+slug: "/Java/Exception"
+---
+
+Java Exception에 관하여
+===========
+
+- [Java 예외(Exception) 처리에 대한 작은 생각](http://www.nextree.co.kr/p3239/)
+- [Checked Exception을 대하는 자세](https://cheese10yun.github.io/checked-exception/)
+
+참고하며 정리했습니다
+
+-------------
+
+Java Exception에 관해서 정리해보고 제가 느낀 것을 적어보겠습니다
+
+모두가 알다시피 Java에서 Exception을 처리하는 방법은 3가지가 있습니다
+
+1. **예외 복구**
+
+```java
+public void doSomething(){
+  try{
+
+    //doSomething
+
+  }catch(Exception e){
+
+  }
+}
+```
+
+예외 복구는 예외가 발생할 여지가 있는 부분에서
+
+<code>Exception</code> 을 바로 <code>catch</code> 하는 흐름으로 처리합니다
+
+2. **예외 회피**
+
+```java
+public void doSomething() throws Exception{
+
+  //doSomething
+
+}
+```
+
+예외 회피는 현재 실행되고 있는 메소드에서 처리하지 않고
+
+그 메소드를 호출하는 상위 흐름에서 처리하도록 유도합니다
+
+3. **예외 전환**
+
+```java
+public void doSomething() throws ChangedException{
+  try{
+
+    //doSomething
+
+  }catch(SomethingException e){
+
+    //new throw ChangedException();
+
+  }
+}
+```
+
+예외 전환은 예외가 발생할 여지가 있는 부분에서
+
+어떠한 <code>Exception</code> 을 <code>catch</code> 하여
+
+다른 <code>Exception</code> 으로 전환하는 것을 의미합니다.
+
+
+저는 처음 예외 전환에 대해 알았을 때 예외 전환이 <u>왜 필요한지</u> 의문이 들었었습니다.
+
+발생할 수 있는 <code>Exception</code> 을 <code>catch</code> 하거나 <code>throws</code> 하는
+
+방법으로도 코드를 작성하는 데는 충분하다고 느낄만큼 경험이 없었습니다
+
+그럼 예외 전환이 왜 필요할까요?
+
+<code>Java</code> 에서는 <code>Exception</code> 에 두 종류가 존재합니다
+
+- <code>CheckedException</code> vs <code>UnCheckedException</code>
+
+<code>CheckedException</code> 은
+
+<code>RuntimeException</code> 을  **제외한 모든 클래스** 들이고
+
+컴파일 과정에서 확인되는 <code>Exception</code> 들 입니다
+
+쉽게 말하면 코드를 작성할 때 꼭 처리하지 않으면 애플리케이션이 실행이 되지 않는 클래스입니다
+
+<code>UnCheckedException</code> 은
+<code>Java</code> 에서 <code>Exception</code> 클래스들 중에
+<code>RuntimeException</code> 을 포함하고 **상속받은 모든 클래스**들 입니다
+
+이는 <code>CheckedException</code> 과는 다르게
+
+작성한 코드들이 컴파일되서 <u>JVM이 실행하는 과정 중</u> 에 발생되는 <code>Exception</code> 클래스입니다
+
+대표적인 예로 흔히 접할 수 있는
+
+<code>NullPointException</code>, <code>IndexOutOfBoundsException</code>, <code>StackOverFlowException</code> 들이 있습니다
+
+즉, 이 <code>UnCheckedException</code> 들은 컴파일러가
+
+컴파일할 때 발견할 수 없는 <code>Exception</code> 들이기 때문에
+
+이름을 보면 알 수 있듯이 JVM이 실행하는 과정에서 발생한다는 의미에서
+
+<code>RuntimeException</code> 입니다
+
+또 큰 차이점으로 <code>CheckedException</code> 과 <code>UnCheckedException</code> 는
+
+트랜잭션 roll-back 여부도 있습니다
+
+<code>CheckedException</code> 는 예외가 발생하면 트랜잭션을 roll-back하지 않고 예외를 던집니다
+
+<code>UnCheckedException</code> 는 예외 발생 시 트랜잭션을 roll-back한다는 점이 있습니다
+
+> 아래 예제와 설명은
+> [Checked Exception을 대하는 자세](https://cheese10yun.github.io/checked-exception/)
+> 에서 퍼왔습니다
+
+```java
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class MemberService {
+
+  private final MemberRepository memberRepository;
+
+  // (1) RuntimeException 예외 발생
+  public Member createUncheckedException() {
+    final Member member = memberRepository.save(new Member("yun"));
+    if (true) {
+      throw new RuntimeException();
+    }
+    return member;
+  }
+
+  // (2) IOException 예외 발생
+  public Member createCheckedException() throws IOException {
+    final Member member = memberRepository.save(new Member("wan"));
+    if (true) {
+      throw new IOException();
+    }
+    return member;
+  }
+}
+```
+1. RuntimeException 예외 발생 발생시키면 yun이라는 member는 rollback이 진행됩니다.
+2. IOException 예외 발생이 되더라도 wan은 rollback이 되지 않고 트랜잭션이 commit까지 완료됩니다.
+
+--------
+
+
+다시 돌아와서 제가 예외 전환이 필요했던 경험을 토대로 <code>Exception</code> 에 대해 이야기 해보겠습니다
+
+흔히 Java JDBC 를 사용하다보면 접할 수 있는 예 입니다
+
+```
+public class DataBaseAccess{
+  public DataBaseAccess{
+    try{
+      Class.forName("com.mysql.jdbc.Driver");
+    }catch(SQLException sqlException){
+      //handle
+    }
+  }
+
+  public List<Something> getSomethings(){
+    try(Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)){
+      //logic...
+    }catech(SQLException sqlException){
+      //handle
+    }
+  }
+}
+```
+
+1. 데이터베이스 드라이버 클래스 로딩
+2. Connection 객체 얻기
+3. 이후 로직
+
+여기서 이슈가 되었던 것은
+
+1. 만약 데이터베이스 드라이버 클래스 로딩에서 <code>Exception</code> 이 발생하면 어떻게 되는 것인가?
+2. Connection 객체를 못 얻었다면?
+
+두 이슈 모두 <code>CheckedException</code> 인 <code>SQLException</code> 이었기 때문에
+
+애플리케이션은 단순히 발생한 <code>Exception</code> 을 <code>catch</code> 해서 무리없이 동작했었습니다
+
+하지만 이후 반복적으로 클라이언트 요청이 발생되어
+
+<code>getSomethings</code> 을 실행할때마다 <code>Exception</code> 이 발생되고 <code>catch</code> 를 반복하면서
+
+클라이언트는 서버에서 오류가 발생했는지 모르고 비어있는 결과물을 받는 상태였습니다.
+
+애초에 드라이버 클래스 로딩이 안되었을 때부터 애플리케이션의 전체 로직이 영향을 미치기 때문에
+
+아 이러한 부분에서는 서버가 오류가 발생했으니 수정해야될 필요성을 느낄 수 있게
+
+표시하도록 예외전환을 하였습니다
+
+```java
+public class DataBaseAccessException extends RuntimeException{
+  private String message;
+
+	public DatabaseAccessException(SQLException exception) {
+		this.message = exception.getMessage();
+		this.setStackTrace(exception.getStackTrace());
+	}
+
+	@Override
+	public String getMessage() {
+		return this.message;
+	}
+}
+```
+
+<code>RuntimeException</code> 을 상속받아 애플리케이션에 장애가 발생하였음을 알려주도록 선언하여
+
+```java
+public class DataBaseAccess{
+  public DataBaseAccess{
+    try{
+      Class.forName("com.mysql.jdbc.Driver");
+    }catch(SQLException sqlException){
+      throw new DataBaseAccessException();
+    }
+  }
+
+  public List<Something> getSomethings(){
+    try(Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)){
+      //logic...
+    }catech(SQLException sqlException){
+      throw new DataBaseAccessException();
+    }
+  }
+}
+```
+
+작성자의 실수나 데이터베이스의 변화로
+
+데이터베이스 클래스 로딩이 안되거나 Connection 객체를 못 얻었을 경우에
+
+서버에 장애가 발생하였음을 인지할 수 있게 하였었습니다
+
+-----------
+
+이렇게 제가 단순하게 생각했던 <code>Exception</code> 에 대해 진지하게 생각해보면서
+
+처리를 할때에도 <code>Exception</code> 을 통해
+
+- 어디서 발생하였는지
+- 무엇때문에 발생하였는
+- 이 Exception 의 영향력이 어느정도인지
+- 처리를 어떻게 할 것인지 등
+
+결국 코드들은 흐름대로 실행되기 때문에
+
+그러한 흐름에 자연스럽게 이어지거나 아니면 옆으로 빗겨서 이어지거나 할 수 있고
+
+흐름을 끊어버릴 수 있게 하는 <code>Exception</code>
+
+정답은 없지만 다룰 때에 만큼은 **신중히 다루어야 한다**는 생각을 가지게 되었습니다
+
+
+
+
+
+
+부족한 글 읽어주셔서 감사합니다.
