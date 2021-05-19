@@ -27,7 +27,7 @@ public interface SearchService<K, V> {
     V search(K key);
 }
 ```
-```Java
+```java
 @Service
 public class BoardSearchByTitleService implements SearchService<Title, BoardDto> {
     private final List<Board> boardList = Arrays.asList(new Board("Issue1"), new Board("Issue2"), new Board("Issue3"));
@@ -83,7 +83,7 @@ public class UserSearchController {
 
 Bean validation를 이용해서 유효성 검증을 간편하게 할 수 있다는 사실을 알게 되었다.
 
->>[Validation 어디까지 해봤니?](https://meetup.toast.com/posts/223)
+>[Validation 어디까지 해봤니?](https://meetup.toast.com/posts/223)
 
 포스팅을 보면서
 
@@ -152,7 +152,7 @@ Caused by: javax.validation.ConstraintDeclarationException: HV000151: A method o
 
 예외를 터트렸고,
 
->> [Javax validation exception when migrating to Wildfly 8.1](https://stackoverflow.com/questions/27060394/javax-validation-exception-when-migrating-to-wildfly-8-1)
+> [Javax validation exception when migrating to Wildfly 8.1](https://stackoverflow.com/questions/27060394/javax-validation-exception-when-migrating-to-wildfly-8-1)
 
 를 참고하여 Overriding한 메소드를 검증할 때 구현체가 아닌
 
@@ -205,8 +205,8 @@ WebConfiguration에서 MethodValidationPostProcessor를 빈으로 등록하였�
 
 **JDK Dynamic Proxy** 객체로 생성한다는 것이였다.
 
->>1. [@Validated don't work on interface](https://github.com/spring-projects/spring-boot/issues/17000)
->>2. [Spring 공식 문서](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#validation)
+>1. [@Validated don't work on interface](https://github.com/spring-projects/spring-boot/issues/17000)
+>2. [Spring 공식 문서](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#validation)
 
 <br/>
 
