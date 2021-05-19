@@ -20,8 +20,8 @@ module.exports = {
       options: {
         navigation: [
           {
-            title: `Blog`,
-            slug: `/blog`,
+            title: `Post`,
+            slug: `/post`,
           },
           {
             title: `About`,
